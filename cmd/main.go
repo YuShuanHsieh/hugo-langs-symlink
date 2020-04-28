@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	var opts []link.Option
 	logger := zerolog.New(zerolog.NewConsoleWriter())
 	builder := symlinkbuilder.New(logger.With().Str("compoent", "builder").Logger())
 
@@ -22,24 +21,16 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "create symlinks",
 				Action: func(c *cli.Context) error {
-					langs := c.StringSlice("langs")
-					if langs != nil {
-						opts = append(opts, link.SetLangs(langs))
-					}
-					skips := c.StringSlice("skips")
-					if langs != nil {
-						opts = append(opts, link.SetSkipDir(skips))
-					}
-					dir := c.String("dir")
-					opts = append(opts, link.SetContentDir(dir))
-
-					cfg, err := link.NewConfiguration(opts...)
+					engine, err := newEngine(c, logger, builder)
 					if err != nil {
 						return err
 					}
-					logger.Info().Msgf("%v", cfg)
-					engine := link.New(logger, builder, cfg)
-					return engine.Create()
+					engine.ShowConfig()
+					if err := engine.Create(); err != nil {
+						return err
+					}
+					logger.Info().Msg("symlinks are removed")
+					return nil
 				},
 			},
 			{
@@ -47,24 +38,16 @@ func main() {
 				Aliases: []string{"r"},
 				Usage:   "remove symlinks",
 				Action: func(c *cli.Context) error {
-					langs := c.StringSlice("langs")
-					if langs != nil {
-						opts = append(opts, link.SetLangs(langs))
-					}
-					skips := c.StringSlice("skips")
-					if langs != nil {
-						opts = append(opts, link.SetSkipDir(skips))
-					}
-					dir := c.String("dir")
-					opts = append(opts, link.SetContentDir(dir))
-
-					cfg, err := link.NewConfiguration(opts...)
+					engine, err := newEngine(c, logger, builder)
 					if err != nil {
 						return err
 					}
-					logger.Info().Msgf("%v", cfg)
-					engine := link.New(logger, builder, cfg)
-					return engine.Remove()
+					engine.ShowConfig()
+					if err := engine.Remove(); err != nil {
+						return err
+					}
+					logger.Info().Msg("symlinks are removed")
+					return nil
 				},
 			},
 		},
@@ -99,4 +82,28 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func newEngine(
+	c *cli.Context,
+	logger zerolog.Logger,
+	builder link.SymlinkBuilder,
+) (*link.Engine, error) {
+	var opts []link.Option
+	langs := c.StringSlice("langs")
+	if langs != nil {
+		opts = append(opts, link.SetLangs(langs))
+	}
+	skips := c.StringSlice("skips")
+	if langs != nil {
+		opts = append(opts, link.SetSkipDir(skips))
+	}
+	dir := c.String("dir")
+	opts = append(opts, link.SetContentDir(dir))
+
+	cfg, err := link.NewConfiguration(opts...)
+	if err != nil {
+		return nil, err
+	}
+	return link.New(logger, builder, cfg), nil
 }

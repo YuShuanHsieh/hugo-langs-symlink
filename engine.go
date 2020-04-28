@@ -31,6 +31,7 @@ func New(logger zerolog.Logger, builder SymlinkBuilder, cfg Configuration) *Engi
 
 // Create create symlinks
 func (e *Engine) Create() error {
+	e.logger.Info().Msg("Starting to create symlinks..")
 	if err := os.Chdir(e.config.contentDir); err != nil {
 		return err
 	}
@@ -75,6 +76,13 @@ func (e *Engine) Create() error {
 		}
 		return nil
 	})
+}
+
+func (e *Engine) ShowConfig() {
+	e.logger.Info().Msg("The configuration is:")
+	e.logger.Info().Msgf("Dir - %s", e.config.contentDir)
+	e.logger.Info().Msgf("Langs - %s", strings.Join(e.config.langs, ","))
+	e.logger.Info().Msgf("Skips - %s", strings.Join(e.config.skipDirs, ","))
 }
 
 func (e *Engine) Remove() error {
