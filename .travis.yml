@@ -1,0 +1,15 @@
+language: go
+sudo: false
+go:
+  - 1.14.x
+
+before_install:
+  - go get -t -v ./...
+  - go get github.com/ory/go-acc
+
+script:
+  - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+  - go-acc ./...
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t CODECOV_TOKEN
