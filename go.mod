@@ -1,4 +1,4 @@
-module gitlab.com/pufs/hugo-langs-symlink
+module github.com/YuShuanHsieh/hugo-langs-symlink
 
 go 1.14
 

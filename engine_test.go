@@ -8,8 +8,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
-	hslink "gitlab.com/pufs/hugo-langs-symlink"
-	"gitlab.com/pufs/hugo-langs-symlink/symlinkbuilder"
+	hslink "github.com/YuShuanHsieh/hugo-langs-symlink"
+	"github.com/YuShuanHsieh/hugo-langs-symlink/symlinkbuilder"
 )
 
 func TestHsLink(t *testing.T) {

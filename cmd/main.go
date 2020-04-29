@@ -6,8 +6,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
-	link "gitlab.com/pufs/hugo-langs-symlink"
-	"gitlab.com/pufs/hugo-langs-symlink/symlinkbuilder"
+	link "github.com/YuShuanHsieh/hugo-langs-symlink"
+	"github.com/YuShuanHsieh/hugo-langs-symlink/symlinkbuilder"
 )
 
 func main() {
