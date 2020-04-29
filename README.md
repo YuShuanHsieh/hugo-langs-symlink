@@ -21,5 +21,5 @@ hsink tool helps you to create symbolic links for these untranslated pages of Hu
 
 ## Example
 ```shell
---dir=/home/user/site/content --langs="zh" --langs="zh-tw"  --skips="images" create
+--dir=/home/user/site/content --langs="zh" --langs="zh-tw" --skips="images" create
 ```
