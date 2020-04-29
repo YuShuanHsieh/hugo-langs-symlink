@@ -25,11 +25,10 @@ func main() {
 					if err != nil {
 						return err
 					}
-					engine.ShowConfig()
 					if err := engine.Create(); err != nil {
 						return err
 					}
-					logger.Info().Msg("symlinks are removed")
+					logger.Info().Msg("symlinks are created")
 					return nil
 				},
 			},
@@ -42,7 +41,6 @@ func main() {
 					if err != nil {
 						return err
 					}
-					engine.ShowConfig()
 					if err := engine.Remove(); err != nil {
 						return err
 					}
@@ -72,9 +70,15 @@ func main() {
 				Usage: "the dirs you want to skip",
 			},
 			&cli.StringFlag{
-				Name:  "dir",
-				Value: "",
-				Usage: "the content dir",
+				Name:     "dir",
+				Value:    "",
+				Usage:    "the content dir",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:  "ext",
+				Value: ".md",
+				Usage: "the file extension of content files. Default is `.md`",
 			},
 		},
 	}
@@ -101,9 +105,18 @@ func newEngine(
 	dir := c.String("dir")
 	opts = append(opts, link.SetContentDir(dir))
 
+	ext := c.String("ext")
+	opts = append(opts, link.SetTargetExt(ext))
+
 	cfg, err := link.NewConfiguration(opts...)
 	if err != nil {
 		return nil, err
 	}
+
+	logger = logger.With().
+		Str("dir", dir).
+		Strs("langs", langs).
+		Strs("skips", skips).
+		Str("extension", ext).Logger()
 	return link.New(logger, builder, cfg), nil
 }

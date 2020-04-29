@@ -31,12 +31,11 @@ func New(logger zerolog.Logger, builder SymlinkBuilder, cfg Configuration) *Engi
 
 // Create create symlinks
 func (e *Engine) Create() error {
-	e.logger.Info().Msg("Starting to create symlinks..")
 	if err := os.Chdir(e.config.contentDir); err != nil {
 		return err
 	}
 	m := make(map[string]struct{})
-	return filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			e.logger.Error().Str("path", path).Err(err)
 			return err
@@ -48,43 +47,37 @@ func (e *Engine) Create() error {
 				}
 			}
 		}
-		if !info.IsDir() && strings.HasSuffix(info.Name(), ".md") {
+		if !info.IsDir() && filepath.Ext(info.Name()) == e.config.targetExt {
 			name := info.Name()
-			if strings.HasSuffix(name, "_index.md") {
-				return nil
-			}
 			if _, ok := m[name]; ok {
 				return nil
 			}
-			name = getContentName(e.config.langs, name)
+			name = e.parseFileName(name)
 			if name == "" {
 				return nil
 			}
 
 			for _, lang := range e.config.langs {
-				fileName := fmt.Sprintf("%s.%s.md", name, lang)
+				fileName := fmt.Sprintf("%s.%s%s", name, lang, e.config.targetExt)
 				origin := filepath.Join(e.config.contentDir, path)
 				expected := filepath.Join(e.config.contentDir, filepath.Dir(path), fileName)
 				if _, err := os.Stat(expected); err != nil {
 					err := e.builder.Build(origin, expected)
 					if err != nil {
 						e.logger.Error().Str("path", expected).Err(err)
+					} else {
+						e.logger.Info().Msgf("symlink [%s] is created", expected)
 					}
-					m[fileName] = struct{}{}
 				}
+				m[fileName] = struct{}{}
 			}
 		}
 		return nil
 	})
+	return err
 }
 
-func (e *Engine) ShowConfig() {
-	e.logger.Info().Msg("The configuration is:")
-	e.logger.Info().Msgf("Dir - %s", e.config.contentDir)
-	e.logger.Info().Msgf("Langs - %s", strings.Join(e.config.langs, ","))
-	e.logger.Info().Msgf("Skips - %s", strings.Join(e.config.skipDirs, ","))
-}
-
+// Remove remove all symlinks
 func (e *Engine) Remove() error {
 	if err := os.Chdir(e.config.contentDir); err != nil {
 		e.logger.Error().Str("path", e.config.contentDir).Err(err)
@@ -104,18 +97,22 @@ func (e *Engine) Remove() error {
 		} else {
 			if e.builder.ShouldRemove(path, info) {
 				fPath := filepath.Join(e.config.contentDir, path)
-				e.builder.Remove(fPath)
+				if err := e.builder.Remove(fPath); err != nil {
+					e.logger.Error().Err(err).Msgf("failed to remove the symlink [%s]", fPath)
+				} else {
+					e.logger.Info().Msgf("symlink [%s] is removed", fPath)
+				}
 			}
 		}
 		return nil
 	})
 }
 
-func getContentName(langs []string, name string) string {
-	nameWithoutType := strings.TrimSuffix(name, ".md")
-	for _, v := range langs {
+func (e *Engine) parseFileName(name string) string {
+	nameWithoutType := strings.TrimSuffix(name, e.config.targetExt)
+	for _, v := range e.config.langs {
 		if strings.HasSuffix(nameWithoutType, v) {
-			return strings.TrimSuffix(name, "."+v)
+			return strings.TrimSuffix(nameWithoutType, "."+v)
 		}
 	}
 	return nameWithoutType

@@ -9,6 +9,7 @@ import (
 type Configuration struct {
 	langs      []string
 	skipDirs   []string
+	targetExt  string
 	contentDir string
 }
 
@@ -46,6 +47,16 @@ func SetLangs(langs []string) Option {
 func SetSkipDir(skipDirs []string) Option {
 	return func(cfg *Configuration) error {
 		cfg.skipDirs = skipDirs
+		return nil
+	}
+}
+
+func SetTargetExt(ext string) Option {
+	return func(cfg *Configuration) error {
+		if []byte(ext)[0] != '.' {
+			return errors.New("the format of file extension should be `.<name>`")
+		}
+		cfg.targetExt = ext
 		return nil
 	}
 }
