@@ -1,4 +1,7 @@
 # hsLink
+[![Build Status](https://travis-ci.org/YuShuanHsieh/hugo-langs-symlink.svg?branch=master)](https://travis-ci.org/YuShuanHsieh/hugo-langs-symlink)
+[![codecov](https://codecov.io/gh/YuShuanHsieh/hugo-langs-symlink/branch/master/graph/badge.svg)](https://codecov.io/gh/YuShuanHsieh/hugo-langs-symlink)
+
 A tool to create symlinks for hugo multi-langs sites.
 
 ## Description
